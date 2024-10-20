@@ -1,12 +1,57 @@
-# Welcome to StackEdit!
+USE master;
+GO
+-- Create the database with the default data
+-- filegroup, filestream filegroup and a log file. Specify the
+-- growth increment and the max size for the
+-- primary data file.
+CREATE DATABASE MyDB
+ON PRIMARY
+  ( NAME='MyDB_Primary',
+    FILENAME=
+       'c:\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\data\MyDB_Prm.mdf',
+    SIZE=4MB,
+    MAXSIZE=10MB,
+    FILEGROWTH=1MB),
+FILEGROUP MyDB_FG1
+  ( NAME = 'MyDB_FG1_Dat1',
+    FILENAME =
+       'c:\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\data\MyDB_FG1_1.ndf',
+    SIZE = 1MB,
+    MAXSIZE=10MB,
+    FILEGROWTH=1MB),
+  ( NAME = 'MyDB_FG1_Dat2',
+    FILENAME =
+       'c:\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\data\MyDB_FG1_2.ndf',
+    SIZE = 1MB,
+    MAXSIZE=10MB,
+    FILEGROWTH=1MB),
+FILEGROUP FileStreamGroup1 CONTAINS FILESTREAM
+  ( NAME = 'MyDB_FG_FS',
+    FILENAME = 'c:\Data\filestream1')
+LOG ON
+  ( NAME='MyDB_log',
+    FILENAME =
+       'c:\Program Files\Microsoft SQL Server\MSSQL.1\MSSQL\data\MyDB.ldf',
+    SIZE=1MB,
+    MAXSIZE=10MB,
+    FILEGROWTH=1MB);
+GO
+ALTER DATABASE MyDB 
+  MODIFY FILEGROUP MyDB_FG1 DEFAULT;
+GO
 
-Hi! I'm your first Markdown file in **StackEdit**. If you want to learn about StackEdit, you can read me. If you want to play with Markdown, you can edit me. Once you have finished with me, you can create new files by opening the **file explorer** on the left corner of the navigation bar.
+-- Create a table in the user-defined filegroup.
+USE MyDB;
+CREATE TABLE MyTable
+  ( cola int PRIMARY KEY,
+    colb char(8) )
+ON MyDB_FG1;
+GO
 
-
-# Files
-
-StackEdit stores your files in your browser, which means all your files are automatically saved locally and are accessible **offline!**
-
-## Create files and folders
-
-The file explorer is accessible using the button in left corner of the navigation bar. You can create a new file by clicking the **New file** button in the file explorer. You can also create folders by clicking the **New folder** button.
+-- Create a table in the filestream filegroup
+CREATE TABLE MyFSTable
+(
+  cola int PRIMARY KEY,
+  colb VARBINARY(MAX) FILESTREAM NULL
+)
+GO
